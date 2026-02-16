@@ -248,19 +248,20 @@ export const AQA_GCSE_SUBJECTS: readonly SubjectMenuItem[] = [
     { id: makeId("AQA", "GCSE", "Physics"), name: "Physics", examBoard: "AQA", qualification: "GCSE", tiering: TIERED_FH, specs: [{ code: "8463", title: "Physics", status: "CURRENT" }] },
     { id: makeId("AQA", "GCSE", "Polish"), name: "Polish", examBoard: "AQA", qualification: "GCSE", tiering: TIERED_FH, specs: [{ code: "8688", title: "Polish", status: "CURRENT" }] },
     { id: makeId("AQA", "GCSE", "Psychology"), name: "Psychology", examBoard: "AQA", qualification: "GCSE", tiering: NOT_TIERED, specs: [{ code: "8182", title: "Psychology", status: "CURRENT" }] },
+    
     {
       id: makeId("AQA", "GCSE", "Religious Studies"),
       name: "Religious Studies",
       examBoard: "AQA",
       qualification: "GCSE",
       tiering: NOT_TIERED,
-      // AQA lists multiple spec codes for RS (A/B etc). Treat as variants.
       specs: [
-        { code: "8061", title: "Religious Studies", status: "CURRENT" },
-        { code: "8062", title: "Religious Studies", status: "CURRENT" },
-        { code: "8063", title: "Religious Studies", status: "CURRENT" },
+        { code: "8061", title: "Religious Studies (Route A)", status: "CURRENT" },
+        { code: "8062", title: "Religious Studies (Route B)", status: "CURRENT" },
+        { code: "8063", title: "Religious Studies (Short Course)", status: "CURRENT" },
       ],
     },
+
     { id: makeId("AQA", "GCSE", "Sociology"), name: "Sociology", examBoard: "AQA", qualification: "GCSE", tiering: NOT_TIERED, specs: [{ code: "8192", title: "Sociology", status: "CURRENT" }] },
     {
       id: makeId("AQA", "GCSE", "Spanish"),

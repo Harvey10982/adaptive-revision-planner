@@ -6,15 +6,21 @@ import type { SubjectSpecification } from "../types/subjectSpecification";
 // GCSE • AQA
 // ===============================
 
+// ===============================
 // Art (Routes)
-import { specification as artCraftAndDesign } from "../specs/gcse/aqa/art/art-craft-and-design";
-import { specification as fineArt } from "../specs/gcse/aqa/art/fine-art";
-import { specification as graphicCommunication } from "../specs/gcse/aqa/art/graphic-communication";
-import { specification as photography } from "../specs/gcse/aqa/art/photography";
-import { specification as textileDesign } from "../specs/gcse/aqa/art/textile-design";
-import { specification as threeDimensionalDesign } from "../specs/gcse/aqa/art/three-dimensional-design";
+// ===============================
 
-// Languages (Tiered)
+import { specification as artCraftAndDesign } from "../specs/gcse/aqa/art-and-design/art-and-design-art-craft-and-design";
+import { specification as fineArt } from "../specs/gcse/aqa/art-and-design/art-and-design-fine-art";
+import { specification as graphicCommunication } from "../specs/gcse/aqa/art-and-design/art-and-design-graphic-communication";
+import { specification as photography } from "../specs/gcse/aqa/art-and-design/art-and-design-photography";
+import { specification as textileDesign } from "../specs/gcse/aqa/art-and-design/art-and-design-textile-design";
+import { specification as threeDimensionalDesign } from "../specs/gcse/aqa/art-and-design/art-and-design-three-dimensional-design";
+
+// ===============================
+// Tiered Languages
+// ===============================
+
 import { specification as bengaliFoundation } from "../specs/gcse/aqa/bengali/bengali-foundation";
 import { specification as bengaliHigher } from "../specs/gcse/aqa/bengali/bengali-higher";
 
@@ -45,7 +51,10 @@ import { specification as spanishHigher } from "../specs/gcse/aqa/spanish/spanis
 import { specification as urduFoundation } from "../specs/gcse/aqa/urdu/urdu-foundation";
 import { specification as urduHigher } from "../specs/gcse/aqa/urdu/urdu-higher";
 
-// Sciences (Tiered)
+// ===============================
+// Tiered Sciences
+// ===============================
+
 import { specification as biologyFoundation } from "../specs/gcse/aqa/biology/biology-foundation";
 import { specification as biologyHigher } from "../specs/gcse/aqa/biology/biology-higher";
 
@@ -58,7 +67,17 @@ import { specification as physicsHigher } from "../specs/gcse/aqa/physics/physic
 import { specification as combinedScienceFoundation } from "../specs/gcse/aqa/combined-science-trilogy/combined-science-trilogy-foundation";
 import { specification as combinedScienceHigher } from "../specs/gcse/aqa/combined-science-trilogy/combined-science-trilogy-higher";
 
-// Core Subjects
+// ===============================
+// Tiered Core Subjects
+// ===============================
+
+import { specification as mathsFoundation } from "../specs/gcse/aqa/mathematics/mathematics-foundation";
+import { specification as mathsHigher } from "../specs/gcse/aqa/mathematics/mathematics-higher";
+
+// ===============================
+// Non-Tiered Core Subjects
+// ===============================
+
 import { specification as business } from "../specs/gcse/aqa/business/business";
 import { specification as computerScience } from "../specs/gcse/aqa/computer-science/computer-science";
 import { specification as citizenshipStudies } from "../specs/gcse/aqa/citizenship-studies/citizenship-studies";
@@ -70,72 +89,65 @@ import { specification as engineering } from "../specs/gcse/aqa/engineering/engi
 import { specification as englishLanguage } from "../specs/gcse/aqa/english-language/english-language";
 import { specification as englishLiterature } from "../specs/gcse/aqa/english-literature/english-literature";
 import { specification as foodPreparationAndNutrition } from "../specs/gcse/aqa/food-preparation-and-nutrition/food-preparation-and-nutrition";
-import { specification as mathsFoundation } from "../specs/gcse/aqa/maths/maths-foundation";
-import { specification as mathsHigher } from "../specs/gcse/aqa/maths/maths-higher";
 import { specification as music } from "../specs/gcse/aqa/music/music";
 import { specification as physicalEducation } from "../specs/gcse/aqa/physical-education/physical-education";
 import { specification as psychology } from "../specs/gcse/aqa/psychology/psychology";
 
+// ===============================
 // Religious Studies (Routes)
+// ===============================
+
 import { specification as religiousStudiesRouteA } from "../specs/gcse/aqa/religious-studies/religious-studies-route-a";
 import { specification as religiousStudiesRouteB } from "../specs/gcse/aqa/religious-studies/religious-studies-route-b";
 import { specification as religiousStudiesShortCourse } from "../specs/gcse/aqa/religious-studies/religious-studies-short-course";
 
 export const specificationRegistry: Record<string, SubjectSpecification> = {
 
-  // Art routes
-  "gcse/aqa/art-craft-and-design": artCraftAndDesign,
-  "gcse/aqa/fine-art": fineArt,
-  "gcse/aqa/graphic-communication": graphicCommunication,
-  "gcse/aqa/photography": photography,
-  "gcse/aqa/textile-design": textileDesign,
-  "gcse/aqa/three-dimensional-design": threeDimensionalDesign,
+  // Art
+  "gcse/aqa/art-and-design/art-craft-and-design": artCraftAndDesign,
+  "gcse/aqa/art-and-design/fine-art": fineArt,
+  "gcse/aqa/art-and-design/graphic-communication": graphicCommunication,
+  "gcse/aqa/art-and-design/photography": photography,
+  "gcse/aqa/art-and-design/textile-design": textileDesign,
+  "gcse/aqa/art-and-design/three-dimensional-design": threeDimensionalDesign,
 
-  // Tiered Languages
+  // Languages
   "gcse/aqa/bengali/foundation": bengaliFoundation,
   "gcse/aqa/bengali/higher": bengaliHigher,
-
   "gcse/aqa/chinese-mandarin/foundation": chineseMandarinFoundation,
   "gcse/aqa/chinese-mandarin/higher": chineseMandarinHigher,
-
   "gcse/aqa/french/foundation": frenchFoundation,
   "gcse/aqa/french/higher": frenchHigher,
-
   "gcse/aqa/german/foundation": germanFoundation,
   "gcse/aqa/german/higher": germanHigher,
-
   "gcse/aqa/hebrew-modern/foundation": hebrewModernFoundation,
   "gcse/aqa/hebrew-modern/higher": hebrewModernHigher,
-
   "gcse/aqa/italian/foundation": italianFoundation,
   "gcse/aqa/italian/higher": italianHigher,
-
   "gcse/aqa/panjabi/foundation": panjabiFoundation,
   "gcse/aqa/panjabi/higher": panjabiHigher,
-
   "gcse/aqa/polish/foundation": polishFoundation,
   "gcse/aqa/polish/higher": polishHigher,
-
   "gcse/aqa/spanish/foundation": spanishFoundation,
   "gcse/aqa/spanish/higher": spanishHigher,
-
   "gcse/aqa/urdu/foundation": urduFoundation,
   "gcse/aqa/urdu/higher": urduHigher,
 
-  // Tiered Sciences
+  // Sciences
   "gcse/aqa/biology/foundation": biologyFoundation,
   "gcse/aqa/biology/higher": biologyHigher,
-
   "gcse/aqa/chemistry/foundation": chemistryFoundation,
   "gcse/aqa/chemistry/higher": chemistryHigher,
-
   "gcse/aqa/physics/foundation": physicsFoundation,
   "gcse/aqa/physics/higher": physicsHigher,
-
   "gcse/aqa/combined-science-trilogy/foundation": combinedScienceFoundation,
   "gcse/aqa/combined-science-trilogy/higher": combinedScienceHigher,
 
-  // Non-tiered core
+  // Mathematics (Tiered Core)
+  "gcse/aqa/mathematics/foundation": mathsFoundation,
+  "gcse/aqa/mathematics/higher": mathsHigher,
+
+  // Non-tiered Core
   "gcse/aqa/business": business,
   "gcse/aqa/computer-science": computerScience,
   "gcse/aqa/citizenship-studies": citizenshipStudies,
@@ -147,14 +159,12 @@ export const specificationRegistry: Record<string, SubjectSpecification> = {
   "gcse/aqa/english-language": englishLanguage,
   "gcse/aqa/english-literature": englishLiterature,
   "gcse/aqa/food-preparation-and-nutrition": foodPreparationAndNutrition,
-  "gcse/aqa/maths/foundation": mathsFoundation,
-  "gcse/aqa/maths/higher": mathsHigher,
   "gcse/aqa/music": music,
   "gcse/aqa/physical-education": physicalEducation,
   "gcse/aqa/psychology": psychology,
 
   // Religious Studies
-  "gcse/aqa/religious-studies-route-a": religiousStudiesRouteA,
-  "gcse/aqa/religious-studies-route-b": religiousStudiesRouteB,
-  "gcse/aqa/religious-studies-short-course": religiousStudiesShortCourse,
+  "gcse/aqa/religious-studies/route-a": religiousStudiesRouteA,
+  "gcse/aqa/religious-studies/route-b": religiousStudiesRouteB,
+  "gcse/aqa/religious-studies/short-course": religiousStudiesShortCourse,
 };

@@ -300,6 +300,24 @@ export default function SetupFlow({ onComplete }: Props) {
           </View>
         )}
 
+        {/* Pathway */}
+        {selectedSubject && requiresPathway && (
+          <View style={{ gap: 8 }}>
+            <Text style={{ fontSize: 16 }}>Specification</Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              {pathwayOptions.map((option) => (
+                <Pressable
+                  key={option.slug}
+                  onPress={() => setPathway(option.slug)}
+                  style={chipStyle(pathway === option.slug)}
+                >
+                  <Text>{option.label}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* Option Groups */}
         {selectedSubject?.optionGroups?.map((group) => (
           <View key={group.id} style={{ gap: 8 }}>
