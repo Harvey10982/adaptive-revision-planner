@@ -1,4 +1,4 @@
-import type { SubjectSpecification } from "../../../../types/SubjectSpecification"
+import type { SubjectSpecification } from "../../../../types/subjectSpecification"
 
 type SubTopic = { id: string; name: string };
 

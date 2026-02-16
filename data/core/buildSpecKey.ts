@@ -1,14 +1,18 @@
-type Tier = "foundation" | "higher" | null;
+import type { BoardChoice, QualificationChoice, TierChoice } from "../types/courseSelection";
 
 export function buildSpecKey(
-  qualification: string,
-  examBoard: string,
+  qualification: QualificationChoice,
+  board: BoardChoice,
   subjectSlug: string,
-  tier: Tier = null,
+  tier: TierChoice | null = null,
   pathway: string | null = null
 ): string {
+  const safeSubject = subjectSlug.trim();
+  if (!safeSubject) {
+    throw new Error("buildSpecKey: subjectSlug is required");
+  }
 
-  let base = `${qualification}/${examBoard}/${subjectSlug}`;
+  const base = `${qualification}/${board}/${safeSubject}`;
 
   if (pathway) {
     return `${base}/${pathway}`;

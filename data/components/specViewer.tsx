@@ -1,6 +1,6 @@
 import React from "react";
 import { SafeAreaView, ScrollView, Text, View, Button } from "react-native";
-import { resolveSpec } from "../core/specResolver";
+import { resolveSpecification } from "../core/specResolver";
 import type { SelectedCourse } from "../types/courseSelection";
 
 interface Props {
@@ -9,13 +9,7 @@ interface Props {
 }
 
 function CourseSection({ course }: { course: SelectedCourse }) {
-  let specification = null;
-
-  try {
-    specification = resolveSpec(course.specKey);
-  } catch {
-    specification = null;
-  }
+  const specification = resolveSpecification(course.specKey);
 
   return (
     <View style={{ marginBottom: 24 }}>

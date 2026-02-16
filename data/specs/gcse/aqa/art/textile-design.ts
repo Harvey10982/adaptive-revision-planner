@@ -1,4 +1,4 @@
-import type { SubjectSpecification } from "../../../../types/SubjectSpecification"
+import type { SubjectSpecification } from "../../../../types/subjectSpecification"
 
 export const specification: SubjectSpecification = {
   units: [
