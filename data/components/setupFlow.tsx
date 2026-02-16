@@ -20,7 +20,6 @@ import { listALevelSubjectsAqa } from "../catalogs/AQA/aqaSubjectIndex.post16";
 
 import type {
   BoardChoice,
-  CourseOptionSelection,
   QualificationChoice,
   SelectedCourse,
   TierChoice,
@@ -30,27 +29,12 @@ interface Props {
   onComplete: (courses: SelectedCourse[]) => void;
 }
 
-const SUBJECT_SLUG_OVERRIDES: Record<string, string> = {
-  mathematics: "maths",
-  "art-and-design": "art",
-};
-
-function normalizeSubjectSlug(slug: string): string {
-  return SUBJECT_SLUG_OVERRIDES[slug] ?? slug;
-}
-
-function slugifyLabel(value: string): string {
+function slugify(value: string): string {
   return value
     .toLowerCase()
     .replace(/&/g, " and ")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-}
-
-function slugFromSubject(subject: SubjectMenuItem): string {
-  const slug = slugifyLabel(subject.name);
-  if (!slug) throw new Error("Invalid subject.name in catalog");
-  return slug;
 }
 
 function chipStyle(isActive: boolean) {
@@ -68,24 +52,15 @@ function formatSelectedCourseLabel(course: SelectedCourse): string {
   const parts = [
     course.qualification.toUpperCase(),
     course.board.toUpperCase(),
-    course.subjectName,
+    course.specTitle,
   ];
+
   if (course.tier) parts.push(course.tier);
+
   return parts.join(" • ");
 }
 
 type OptionState = Record<string, string[]>;
-type PathwayOption = { slug: string; label: string };
-
-function derivePathwayOptions(subject: SubjectMenuItem): PathwayOption[] {
-  if (!subject.specs || subject.specs.length <= 1) return [];
-
-  return subject.specs.map((variant) => {
-    const match = variant.title.match(/\(([^)]+)\)/);
-    const label = match?.[1]?.trim() || variant.title.trim() || variant.code;
-    return { slug: slugifyLabel(label), label };
-  });
-}
 
 export default function SetupFlow({ onComplete }: Props) {
   const [qualification, setQualification] =
@@ -94,10 +69,12 @@ export default function SetupFlow({ onComplete }: Props) {
 
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [tier, setTier] = useState<TierChoice | null>(null);
-  const [pathway, setPathway] = useState<string | null>(null);
+  const [selectedSpecCode, setSelectedSpecCode] =
+    useState<string | null>(null);
 
   const [optionSelections, setOptionSelections] =
     useState<OptionState>({});
+
   const [selectedCourses, setSelectedCourses] =
     useState<SelectedCourse[]>([]);
 
@@ -113,37 +90,48 @@ export default function SetupFlow({ onComplete }: Props) {
     [subjects, subjectId]
   );
 
+  const requiresTier =
+    selectedSubject?.tiering.kind === "TIERED";
+
+  const hasMultipleSpecs =
+    !!selectedSubject && selectedSubject.specs.length > 1;
+
   const requiredOptionGroups =
     selectedSubject?.optionGroups?.filter((g) => g.required) ?? [];
 
-  const requiresTier = selectedSubject?.tiering.kind === "TIERED";
-
   const subjectSlug = selectedSubject
-    ? normalizeSubjectSlug(slugFromSubject(selectedSubject))
+    ? slugify(selectedSubject.name)
     : null;
-
-  const pathwayOptions =
-    selectedSubject && !requiresTier
-      ? derivePathwayOptions(selectedSubject)
-      : [];
-
-  const requiresPathway = pathwayOptions.length > 1;
 
   const currentSpecKey = useMemo(() => {
     if (!selectedSubject || !subjectSlug) return null;
 
-    const selectedTier = requiresTier ? tier : null;
-    const selectedPathway = requiresPathway ? pathway : null;
+    if (requiresTier && !tier) return null;
+    if (hasMultipleSpecs && !selectedSpecCode) return null;
 
-    if (requiresTier && !selectedTier) return null;
-    if (requiresPathway && !selectedPathway) return null;
+    const pathwaySlug =
+    hasMultipleSpecs && selectedSpecCode
+      ? (() => {
+          const spec = selectedSubject.specs.find(
+            (s) => s.code === selectedSpecCode
+          );
+          if (!spec) return null;
+
+          const match = spec.title.match(/\(([^)]+)\)/);
+          const label =
+            match?.[1]?.trim() ?? spec.title.trim();
+
+          return slugify(label);
+        })()
+      : null;
+
 
     return buildSpecKey(
       qualification,
       board,
       subjectSlug,
-      selectedTier,
-      selectedPathway
+      requiresTier ? tier : null,
+      pathwaySlug
     );
   }, [
     selectedSubject,
@@ -152,20 +140,26 @@ export default function SetupFlow({ onComplete }: Props) {
     board,
     requiresTier,
     tier,
-    requiresPathway,
-    pathway,
+    hasMultipleSpecs,
+    selectedSpecCode,
   ]);
 
   const isSupportedSpec =
-    !!currentSpecKey && !!specificationRegistry[currentSpecKey];
+    !!currentSpecKey &&
+    !!specificationRegistry[currentSpecKey];
 
-  const hasRequiredOptions = requiredOptionGroups.every((group) => {
-    const selected = optionSelections[group.id] ?? [];
-    return selected.length > 0;
-  });
+  const hasRequiredOptions = requiredOptionGroups.every(
+    (group) => {
+      const selected = optionSelections[group.id] ?? [];
+      return selected.length > 0;
+    }
+  );
 
   const canAddCourse =
-    !!selectedSubject && !!currentSpecKey && hasRequiredOptions;
+    !!selectedSubject &&
+    !!currentSpecKey &&
+    hasRequiredOptions &&
+    isSupportedSpec;
 
   const toggleOption = (
     groupId: string,
@@ -185,15 +179,24 @@ export default function SetupFlow({ onComplete }: Props) {
   };
 
   const handleAddCourse = () => {
-    if (!selectedSubject || !currentSpecKey || !canAddCourse) return;
+    if (!selectedSubject || !currentSpecKey) return;
+
+    const selectedSpec =
+      selectedSubject.specs.find(
+        (s) =>
+          !hasMultipleSpecs || s.code === selectedSpecCode
+      ) ?? selectedSubject.specs[0];
 
     const course: SelectedCourse = {
-      id: `${currentSpecKey}::${JSON.stringify(optionSelections)}`,
+      id: `${currentSpecKey}::${JSON.stringify(
+        optionSelections
+      )}`,
       specKey: currentSpecKey,
       qualification,
       board,
       subjectId: selectedSubject.id,
       subjectName: selectedSubject.name,
+      specTitle: selectedSpec.title,
       tier: requiresTier ? tier : null,
       optionSelections: [],
     };
@@ -236,7 +239,9 @@ export default function SetupFlow({ onComplete }: Props) {
                   style={chipStyle(qualification === value)}
                 >
                   <Text>
-                    {value === "gcse" ? "GCSE" : "A-Level"}
+                    {value === "gcse"
+                      ? "GCSE"
+                      : "A-Level"}
                   </Text>
                 </Pressable>
               )
@@ -249,7 +254,9 @@ export default function SetupFlow({ onComplete }: Props) {
           <Text style={{ fontSize: 16 }}>Exam board</Text>
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
             {examBoards
-              .filter((b) => b.qualifications.includes(qualification))
+              .filter((b) =>
+                b.qualifications.includes(qualification)
+              )
               .map((boardOption) => (
                 <Pressable
                   key={boardOption.id}
@@ -271,7 +278,12 @@ export default function SetupFlow({ onComplete }: Props) {
             {subjects.map((subject) => (
               <Pressable
                 key={subject.id}
-                onPress={() => setSubjectId(subject.id)}
+                onPress={() => {
+                  setSubjectId(subject.id);
+                  setTier(null);
+                  setSelectedSpecCode(null);
+                  setOptionSelections({});
+                }}
                 style={chipStyle(subjectId === subject.id)}
               >
                 <Text>{subject.name}</Text>
@@ -300,18 +312,24 @@ export default function SetupFlow({ onComplete }: Props) {
           </View>
         )}
 
-        {/* Pathway */}
-        {selectedSubject && requiresPathway && (
+        {/* Multi-spec selection (Art, RS, etc.) */}
+        {selectedSubject && hasMultipleSpecs && (
           <View style={{ gap: 8 }}>
-            <Text style={{ fontSize: 16 }}>Specification</Text>
+            <Text style={{ fontSize: 16 }}>
+              Specification
+            </Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-              {pathwayOptions.map((option) => (
+              {selectedSubject.specs.map((spec) => (
                 <Pressable
-                  key={option.slug}
-                  onPress={() => setPathway(option.slug)}
-                  style={chipStyle(pathway === option.slug)}
+                  key={spec.code}
+                  onPress={() =>
+                    setSelectedSpecCode(spec.code)
+                  }
+                  style={chipStyle(
+                    selectedSpecCode === spec.code
+                  )}
                 >
-                  <Text>{option.label}</Text>
+                  <Text>{spec.title}</Text>
                 </Pressable>
               ))}
             </View>
@@ -371,7 +389,12 @@ export default function SetupFlow({ onComplete }: Props) {
         {/* Selected Courses */}
         {selectedCourses.map((course) => (
           <View key={course.id} style={styles.card}>
-            <Text style={{ fontWeight: "600", marginBottom: 4 }}>
+            <Text
+              style={{
+                fontWeight: "600",
+                marginBottom: 4,
+              }}
+            >
               {formatSelectedCourseLabel(course)}
             </Text>
             <Pressable
@@ -379,9 +402,13 @@ export default function SetupFlow({ onComplete }: Props) {
                 styles.dangerButton,
                 pressed && styles.dangerPressed,
               ]}
-              onPress={() => removeCourse(course.id)}
+              onPress={() =>
+                removeCourse(course.id)
+              }
             >
-              <Text style={styles.buttonText}>Remove</Text>
+              <Text style={styles.buttonText}>
+                Remove
+              </Text>
             </Pressable>
           </View>
         ))}
@@ -398,9 +425,13 @@ export default function SetupFlow({ onComplete }: Props) {
               selectedCourses.length > 0 &&
               styles.bluePressed,
           ]}
-          onPress={() => onComplete(selectedCourses)}
+          onPress={() =>
+            onComplete(selectedCourses)
+          }
         >
-          <Text style={styles.buttonText}>Continue</Text>
+          <Text style={styles.buttonText}>
+            Continue
+          </Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
