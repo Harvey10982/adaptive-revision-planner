@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, Button, Pressable, ScrollView } from "react-native";
+import { View, Text, Button, Pressable, ScrollView, SafeAreaView } from "react-native";
 import { buildSpecKey } from "../core/buildSpecKey";
 import { specificationRegistry } from "../core/specRegistry";
 
 interface Props {
-  onComplete: (specKey: string) => void;
+  onComplete: (specKeys: string[]) => void;
 }
 
 type Tier = "foundation" | "higher";
@@ -20,6 +20,13 @@ function toLabel(subjectSlug: string): string {
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function toCourseLabel(specKey: string): string {
+  const [qualification, board, subject, tier] = specKey.split("/");
+  return [qualification?.toUpperCase(), board?.toUpperCase(), toLabel(subject ?? "")]
+    .concat(tier ? [tier] : [])
+    .join(" • ");
 }
 
 function buildSubjectOptions(): SubjectOption[] {
@@ -60,6 +67,7 @@ export default function SetupFlow({ onComplete }: Props) {
 
   const [subject, setSubject] = useState<string | null>(null);
   const [tier, setTier] = useState<Tier | null>(null);
+  const [selectedSpecKeys, setSelectedSpecKeys] = useState<string[]>([]);
 
   const selectedSubject = useMemo(
     () => subjectOptions.find((option) => option.subject === subject) ?? null,
@@ -67,7 +75,8 @@ export default function SetupFlow({ onComplete }: Props) {
   );
 
   const requiresTier = !!selectedSubject && selectedSubject.tiers.length > 0;
-  const canContinue = !!selectedSubject && (!requiresTier || !!tier);
+  const canAddCourse = !!selectedSubject && (!requiresTier || !!tier);
+  const canContinue = selectedSpecKeys.length > 0;
 
   const handleSelectSubject = (nextSubject: string) => {
     const nextOption = subjectOptions.find((option) => option.subject === nextSubject);
@@ -86,83 +95,125 @@ export default function SetupFlow({ onComplete }: Props) {
     setTier(nextOption.tiers[0]);
   };
 
-  const handleContinue = () => {
-    if (!selectedSubject) {
+  const currentSpecKey = selectedSubject
+    ? buildSpecKey(qualification, board, selectedSubject.subject, tier)
+    : null;
+
+  const handleAddCourse = () => {
+    if (!currentSpecKey) {
       return;
     }
 
-    const specKey = buildSpecKey(qualification, board, selectedSubject.subject, tier);
-    onComplete(specKey);
+    setSelectedSpecKeys((previous) => {
+      if (previous.includes(currentSpecKey)) {
+        return previous;
+      }
+
+      return [...previous, currentSpecKey];
+    });
+  };
+
+  const handleRemoveCourse = (specKey: string) => {
+    setSelectedSpecKeys((previous) => previous.filter((item) => item !== specKey));
   };
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 24, gap: 16 }}>
-      <Text style={{ fontSize: 22, fontWeight: "600" }}>Select your course</Text>
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 32, gap: 16 }}>
+        <Text style={{ fontSize: 22, fontWeight: "600" }}>Select your courses</Text>
 
-      <View>
-        <Text style={{ marginBottom: 8, fontSize: 16 }}>Qualification: GCSE</Text>
-        <Text style={{ marginBottom: 12, fontSize: 16 }}>Board: AQA</Text>
-      </View>
-
-      <View>
-        <Text style={{ marginBottom: 8, fontSize: 16 }}>Subject</Text>
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {subjectOptions.map((option) => {
-            const isActive = option.subject === subject;
-            return (
-              <Pressable
-                key={option.baseKey}
-                onPress={() => handleSelectSubject(option.subject)}
-                style={{
-                  borderWidth: 1,
-                  borderColor: isActive ? "#1d4ed8" : "#cbd5e1",
-                  backgroundColor: isActive ? "#dbeafe" : "#ffffff",
-                  paddingVertical: 8,
-                  paddingHorizontal: 10,
-                  borderRadius: 8,
-                }}
-              >
-                <Text>{toLabel(option.subject)}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
-
-      {requiresTier && (
         <View>
-          <Text style={{ marginBottom: 8, fontSize: 16 }}>Tier</Text>
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            {selectedSubject?.tiers.map((availableTier) => {
-              const isActive = tier === availableTier;
+          <Text style={{ marginBottom: 8, fontSize: 16 }}>Qualification: GCSE</Text>
+          <Text style={{ marginBottom: 12, fontSize: 16 }}>Board: AQA</Text>
+        </View>
+
+        <View>
+          <Text style={{ marginBottom: 8, fontSize: 16 }}>Subject</Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {subjectOptions.map((option) => {
+              const isActive = option.subject === subject;
               return (
                 <Pressable
-                  key={availableTier}
-                  onPress={() => setTier(availableTier)}
+                  key={option.baseKey}
+                  onPress={() => handleSelectSubject(option.subject)}
                   style={{
                     borderWidth: 1,
                     borderColor: isActive ? "#1d4ed8" : "#cbd5e1",
                     backgroundColor: isActive ? "#dbeafe" : "#ffffff",
                     paddingVertical: 8,
-                    paddingHorizontal: 12,
+                    paddingHorizontal: 10,
                     borderRadius: 8,
                   }}
                 >
-                  <Text>{availableTier}</Text>
+                  <Text>{toLabel(option.subject)}</Text>
                 </Pressable>
               );
             })}
           </View>
         </View>
-      )}
 
-      <View style={{ marginTop: 8 }}>
-        <Text style={{ marginBottom: 12 }}>
-          Current selection: {subject ? toLabel(subject) : "None"}
-          {tier ? ` (${tier})` : ""}
-        </Text>
-        <Button title="Continue" onPress={handleContinue} disabled={!canContinue} />
-      </View>
-    </ScrollView>
+        {requiresTier && (
+          <View>
+            <Text style={{ marginBottom: 8, fontSize: 16 }}>Tier</Text>
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              {selectedSubject?.tiers.map((availableTier) => {
+                const isActive = tier === availableTier;
+                return (
+                  <Pressable
+                    key={availableTier}
+                    onPress={() => setTier(availableTier)}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: isActive ? "#1d4ed8" : "#cbd5e1",
+                      backgroundColor: isActive ? "#dbeafe" : "#ffffff",
+                      paddingVertical: 8,
+                      paddingHorizontal: 12,
+                      borderRadius: 8,
+                    }}
+                  >
+                    <Text>{availableTier}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
+        <View style={{ marginTop: 8, gap: 8 }}>
+          <Text>
+            Current selection: {subject ? toLabel(subject) : "None"}
+            {tier ? ` (${tier})` : ""}
+          </Text>
+          <Button title="Add selected course" onPress={handleAddCourse} disabled={!canAddCourse} />
+        </View>
+
+        <View style={{ gap: 8 }}>
+          <Text style={{ fontSize: 16, fontWeight: "600" }}>Selected courses</Text>
+          {selectedSpecKeys.length === 0 ? (
+            <Text>No courses selected yet.</Text>
+          ) : (
+            selectedSpecKeys.map((specKey) => (
+              <View
+                key={specKey}
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#cbd5e1",
+                  borderRadius: 8,
+                  padding: 10,
+                  gap: 8,
+                }}
+              >
+                <Text>{toCourseLabel(specKey)}</Text>
+                <Button title="Remove" onPress={() => handleRemoveCourse(specKey)} />
+              </View>
+            ))
+          )}
+        </View>
+
+        <View style={{ marginTop: 4 }}>
+          <Button title="Continue" onPress={() => onComplete(selectedSpecKeys)} disabled={!canContinue} />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
