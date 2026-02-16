@@ -24,6 +24,30 @@ interface Props {
   onComplete: (courses: SelectedCourse[]) => void;
 }
 
+function slugFromSubject(subject: SubjectMenuItem): string {
+  const parts = subject.id.split("__");
+  return parts[parts.length - 1];
+}
+
+function chipStyle(isActive: boolean) {
+  return {
+    borderWidth: 1,
+    borderColor: isActive ? "#1d4ed8" : "#cbd5e1",
+    backgroundColor: isActive ? "#dbeafe" : "#ffffff",
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  } as const;
+}
+
+function formatSelectedCourseLabel(course: SelectedCourse): string {
+  const parts = [course.qualification.toUpperCase(), course.board.toUpperCase(), course.subjectName];
+  if (course.tier) {
+    parts.push(course.tier);
+  }
+  return parts.join(" • ");
+}
+
 type OptionState = Record<string, string[]>;
 
 function slugFromSubject(subject: SubjectMenuItem): string {
@@ -136,7 +160,7 @@ export default function SetupFlow({ onComplete }: Props) {
 
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [tier, setTier] = useState<TierChoice | null>(null);
-  const [optionSelections, setOptionSelections] = useState<OptionState>({});
+  const [optionSelections, setOptionSelections] = useState<Record<string, string[]>>({});
   const [selectedCourses, setSelectedCourses] = useState<SelectedCourse[]>([]);
 
   const subjects = useMemo(() => {
