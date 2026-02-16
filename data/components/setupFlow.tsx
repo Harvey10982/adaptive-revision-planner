@@ -1,11 +1,21 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, Button, Pressable, ScrollView, SafeAreaView } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  SafeAreaView,
+  StyleSheet,
+} from "react-native";
 
 import { buildSpecKey } from "../core/buildSpecKey";
 import { specificationRegistry } from "../core/specRegistry";
 import { examBoards } from "../types/examBoards";
 
-import { listGcseSubjectsAqa, type SubjectMenuItem } from "../catalogs/AQA/aqaSubjectIndex.gcse";
+import {
+  listGcseSubjectsAqa,
+  type SubjectMenuItem,
+} from "../catalogs/AQA/aqaSubjectIndex.gcse";
 import { listALevelSubjectsAqa } from "../catalogs/AQA/aqaSubjectIndex.post16";
 
 import type {
@@ -39,9 +49,7 @@ function slugifyLabel(value: string): string {
 
 function slugFromSubject(subject: SubjectMenuItem): string {
   const slug = slugifyLabel(subject.name);
-  if (!slug) {
-    throw new Error("Invalid subject.name in catalog");
-  }
+  if (!slug) throw new Error("Invalid subject.name in catalog");
   return slug;
 }
 
@@ -62,9 +70,7 @@ function formatSelectedCourseLabel(course: SelectedCourse): string {
     course.board.toUpperCase(),
     course.subjectName,
   ];
-  if (course.tier) {
-    parts.push(course.tier);
-  }
+  if (course.tier) parts.push(course.tier);
   return parts.join(" • ");
 }
 
@@ -72,47 +78,43 @@ type OptionState = Record<string, string[]>;
 type PathwayOption = { slug: string; label: string };
 
 function derivePathwayOptions(subject: SubjectMenuItem): PathwayOption[] {
-  if (!subject.specs || subject.specs.length <= 1) {
-    return [];
-  }
+  if (!subject.specs || subject.specs.length <= 1) return [];
 
   return subject.specs.map((variant) => {
     const match = variant.title.match(/\(([^)]+)\)/);
     const label = match?.[1]?.trim() || variant.title.trim() || variant.code;
-    return {
-      slug: slugifyLabel(label),
-      label,
-    };
+    return { slug: slugifyLabel(label), label };
   });
 }
 
 export default function SetupFlow({ onComplete }: Props) {
-  const [qualification, setQualification] = useState<QualificationChoice>("gcse");
+  const [qualification, setQualification] =
+    useState<QualificationChoice>("gcse");
   const [board, setBoard] = useState<BoardChoice>("aqa");
 
   const [subjectId, setSubjectId] = useState<string | null>(null);
   const [tier, setTier] = useState<TierChoice | null>(null);
   const [pathway, setPathway] = useState<string | null>(null);
 
-  const [optionSelections, setOptionSelections] = useState<OptionState>({});
-  const [selectedCourses, setSelectedCourses] = useState<SelectedCourse[]>([]);
+  const [optionSelections, setOptionSelections] =
+    useState<OptionState>({});
+  const [selectedCourses, setSelectedCourses] =
+    useState<SelectedCourse[]>([]);
 
   const subjects = useMemo(() => {
-    if (board !== "aqa") {
-      return [] as readonly SubjectMenuItem[];
-    }
+    if (board !== "aqa") return [];
     return qualification === "gcse"
       ? listGcseSubjectsAqa()
       : listALevelSubjectsAqa();
   }, [board, qualification]);
 
   const selectedSubject = useMemo(
-    () => subjects.find((subject) => subject.id === subjectId) ?? null,
+    () => subjects.find((s) => s.id === subjectId) ?? null,
     [subjects, subjectId]
   );
 
   const requiredOptionGroups =
-    selectedSubject?.optionGroups?.filter((group) => group.required) ?? [];
+    selectedSubject?.optionGroups?.filter((g) => g.required) ?? [];
 
   const requiresTier = selectedSubject?.tiering.kind === "TIERED";
 
@@ -128,9 +130,7 @@ export default function SetupFlow({ onComplete }: Props) {
   const requiresPathway = pathwayOptions.length > 1;
 
   const currentSpecKey = useMemo(() => {
-    if (!selectedSubject || !subjectSlug) {
-      return null;
-    }
+    if (!selectedSubject || !subjectSlug) return null;
 
     const selectedTier = requiresTier ? tier : null;
     const selectedPathway = requiresPathway ? pathway : null;
@@ -167,30 +167,11 @@ export default function SetupFlow({ onComplete }: Props) {
   const canAddCourse =
     !!selectedSubject && !!currentSpecKey && hasRequiredOptions;
 
-  const handleQualificationChange = (value: QualificationChoice) => {
-    setQualification(value);
-    setSubjectId(null);
-    setTier(null);
-    setPathway(null);
-    setOptionSelections({});
-  };
-
-  const handleBoardChange = (value: BoardChoice) => {
-    setBoard(value);
-    setSubjectId(null);
-    setTier(null);
-    setPathway(null);
-    setOptionSelections({});
-  };
-
-  const handleSubjectChange = (value: string) => {
-    setSubjectId(value);
-    setTier(null);
-    setPathway(null);
-    setOptionSelections({});
-  };
-
-  const toggleOption = (groupId: string, optionId: string, multiSelect: boolean) => {
+  const toggleOption = (
+    groupId: string,
+    optionId: string,
+    multiSelect: boolean
+  ) => {
     setOptionSelections((prev) => {
       const existing = prev[groupId] ?? [];
       if (multiSelect) {
@@ -217,22 +198,16 @@ export default function SetupFlow({ onComplete }: Props) {
       optionSelections: [],
     };
 
-    setSelectedCourses((previous) => {
-      if (previous.some((item) => item.id === course.id)) {
-        return previous;
-      }
-      return [...previous, course];
+    setSelectedCourses((prev) => {
+      if (prev.some((c) => c.id === course.id)) return prev;
+      return [...prev, course];
     });
   };
 
   const removeCourse = (courseId: string) => {
-    setSelectedCourses((previous) =>
-      previous.filter((course) => course.id !== courseId)
+    setSelectedCourses((prev) =>
+      prev.filter((c) => c.id !== courseId)
     );
-  };
-
-  const handleComplete = () => {
-    onComplete(selectedCourses);
   };
 
   return (
@@ -253,15 +228,19 @@ export default function SetupFlow({ onComplete }: Props) {
         <View style={{ gap: 8 }}>
           <Text style={{ fontSize: 16 }}>Qualification</Text>
           <View style={{ flexDirection: "row", gap: 8 }}>
-            {(["gcse", "alevel"] as QualificationChoice[]).map((value) => (
-              <Pressable
-                key={value}
-                onPress={() => handleQualificationChange(value)}
-                style={chipStyle(qualification === value)}
-              >
-                <Text>{value === "gcse" ? "GCSE" : "A-Level"}</Text>
-              </Pressable>
-            ))}
+            {(["gcse", "alevel"] as QualificationChoice[]).map(
+              (value) => (
+                <Pressable
+                  key={value}
+                  onPress={() => setQualification(value)}
+                  style={chipStyle(qualification === value)}
+                >
+                  <Text>
+                    {value === "gcse" ? "GCSE" : "A-Level"}
+                  </Text>
+                </Pressable>
+              )
+            )}
           </View>
         </View>
 
@@ -275,7 +254,7 @@ export default function SetupFlow({ onComplete }: Props) {
                 <Pressable
                   key={boardOption.id}
                   onPress={() =>
-                    handleBoardChange(boardOption.id as BoardChoice)
+                    setBoard(boardOption.id as BoardChoice)
                   }
                   style={chipStyle(board === boardOption.id)}
                 >
@@ -288,68 +267,154 @@ export default function SetupFlow({ onComplete }: Props) {
         {/* Subject */}
         <View style={{ gap: 8 }}>
           <Text style={{ fontSize: 16 }}>Subject</Text>
-          {subjects.length === 0 ? (
-            <Text style={{ color: "#6b7280" }}>
-              No subjects available for this board yet.
-            </Text>
-          ) : (
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-              {subjects.map((subject) => (
-                <Pressable
-                  key={subject.id}
-                  onPress={() => handleSubjectChange(subject.id)}
-                  style={chipStyle(subjectId === subject.id)}
-                >
-                  <Text>{subject.name}</Text>
-                </Pressable>
-              ))}
-            </View>
-          )}
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {subjects.map((subject) => (
+              <Pressable
+                key={subject.id}
+                onPress={() => setSubjectId(subject.id)}
+                style={chipStyle(subjectId === subject.id)}
+              >
+                <Text>{subject.name}</Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
+
+        {/* Tier */}
+        {selectedSubject && requiresTier && (
+          <View style={{ gap: 8 }}>
+            <Text style={{ fontSize: 16 }}>Tier</Text>
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              {(["foundation", "higher"] as TierChoice[]).map(
+                (value) => (
+                  <Pressable
+                    key={value}
+                    onPress={() => setTier(value)}
+                    style={chipStyle(tier === value)}
+                  >
+                    <Text>{value}</Text>
+                  </Pressable>
+                )
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* Option Groups */}
+        {selectedSubject?.optionGroups?.map((group) => (
+          <View key={group.id} style={{ gap: 8 }}>
+            <Text style={{ fontSize: 16 }}>
+              {group.label}
+              {group.required ? " *" : ""}
+            </Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              {group.options.map((option) => {
+                const selectedIds =
+                  optionSelections[group.id] ?? [];
+                const active =
+                  selectedIds.includes(option.id);
+                return (
+                  <Pressable
+                    key={option.id}
+                    onPress={() =>
+                      toggleOption(
+                        group.id,
+                        option.id,
+                        group.multiSelect
+                      )
+                    }
+                    style={chipStyle(active)}
+                  >
+                    <Text>{option.label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ))}
 
         {/* Add Button */}
-        <View style={{ gap: 8 }}>
-          <Button
-            title="Add selected course"
-            onPress={handleAddCourse}
-            disabled={!canAddCourse}
-          />
-          <Text>Selected courses: {selectedCourses.length}</Text>
-        </View>
+        <Pressable
+          disabled={!canAddCourse}
+          style={({ pressed }) => [
+            styles.primaryButton,
+            canAddCourse
+              ? styles.activeBlue
+              : styles.inactiveGrey,
+            pressed && canAddCourse && styles.bluePressed,
+          ]}
+          onPress={handleAddCourse}
+        >
+          <Text style={styles.buttonText}>
+            Add selected course
+          </Text>
+        </Pressable>
 
         {/* Selected Courses */}
-        <View style={{ gap: 8 }}>
-          {selectedCourses.map((course) => (
-            <View
-              key={course.id}
-              style={{
-                borderWidth: 1,
-                borderColor: "#e2e8f0",
-                borderRadius: 10,
-                padding: 12,
-              }}
+        {selectedCourses.map((course) => (
+          <View key={course.id} style={styles.card}>
+            <Text style={{ fontWeight: "600", marginBottom: 4 }}>
+              {formatSelectedCourseLabel(course)}
+            </Text>
+            <Pressable
+              style={({ pressed }) => [
+                styles.dangerButton,
+                pressed && styles.dangerPressed,
+              ]}
+              onPress={() => removeCourse(course.id)}
             >
-              <Text style={{ fontWeight: "600", marginBottom: 4 }}>
-                {formatSelectedCourseLabel(course)}
-              </Text>
-
-              <Button
-                title="Remove"
-                onPress={() => removeCourse(course.id)}
-              />
-            </View>
-          ))}
-        </View>
+              <Text style={styles.buttonText}>Remove</Text>
+            </Pressable>
+          </View>
+        ))}
 
         {/* Continue */}
-        <View style={{ gap: 8, paddingTop: 12 }}>
-          <Button
-            title="Continue"
-            onPress={handleComplete}
-            disabled={selectedCourses.length === 0}
-          />
-        </View>
+        <Pressable
+          disabled={selectedCourses.length === 0}
+          style={({ pressed }) => [
+            styles.primaryButton,
+            selectedCourses.length > 0
+              ? styles.activeBlue
+              : styles.inactiveGrey,
+            pressed &&
+              selectedCourses.length > 0 &&
+              styles.bluePressed,
+          ]}
+          onPress={() => onComplete(selectedCourses)}
+        >
+          <Text style={styles.buttonText}>Continue</Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  primaryButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  activeBlue: { backgroundColor: "#3B82F6" },
+  inactiveGrey: { backgroundColor: "#d1d5db" },
+  bluePressed: { backgroundColor: "#2563EB" },
+  dangerButton: {
+    backgroundColor: "#EF4444",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dangerPressed: { backgroundColor: "#DC2626" },
+  buttonText: { color: "#ffffff", fontWeight: "600" },
+  card: {
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 8,
+  },
+});
