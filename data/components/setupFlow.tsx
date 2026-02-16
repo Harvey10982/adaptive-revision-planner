@@ -42,6 +42,32 @@ function chipStyle(isActive: boolean) {
   } as const;
 }
 
+function formatSelectedCourseLabel(course: SelectedCourse): string {
+  const parts = [course.qualification.toUpperCase(), course.board.toUpperCase(), course.subjectName];
+  if (course.tier) {
+    parts.push(course.tier);
+  }
+  return parts.join(" • ");
+}
+
+type OptionState = Record<string, string[]>;
+
+function slugFromSubject(subject: SubjectMenuItem): string {
+  const parts = subject.id.split("__");
+  return parts[parts.length - 1];
+}
+
+function chipStyle(isActive: boolean) {
+  return {
+    borderWidth: 1,
+    borderColor: isActive ? "#1d4ed8" : "#cbd5e1",
+    backgroundColor: isActive ? "#dbeafe" : "#ffffff",
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  } as const;
+}
+
 function toCourseLabel(course: SelectedCourse): string {
   const parts = [course.qualification.toUpperCase(), course.board.toUpperCase(), course.subjectName];
   if (course.tier) {
@@ -344,7 +370,7 @@ export default function SetupFlow({ onComplete }: Props) {
               key={course.id}
               style={{ borderWidth: 1, borderColor: "#cbd5e1", borderRadius: 8, padding: 10, gap: 8 }}
             >
-              <Text>{toCourseLabel(course)}</Text>
+              <Text>{formatSelectedCourseLabel(course)}</Text>
               {course.optionSelections.map((selection) => (
                 <Text key={selection.groupId}>
                   {selection.groupLabel}: {selection.selectedOptionLabels.join(", ")}
