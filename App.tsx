@@ -1,29 +1,45 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
-import type { Confidence } from "./types/planner";
-import { generateInitialPlan } from "./engine/scheduler";
+import React, { useEffect, useState } from "react";
+import { View, ActivityIndicator } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import SetupFlow from "./data/components/setupFlow";
+import SpecViewer from "./data/components/specViewer";
+
+const STORAGE_KEY = "ACTIVE_SPEC_KEY";
 
 export default function App() {
-  const testConfidence: Confidence = 3;
+  const [activeSpecKey, setActiveSpecKey] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  console.log(
-    "Scheduler loaded:",
-    typeof generateInitialPlan === "function"
-  );
+  useEffect(() => {
+    const loadSpecKey = async () => {
+      const saved = await AsyncStorage.getItem(STORAGE_KEY);
+      if (saved) setActiveSpecKey(saved);
+      setLoading(false);
+    };
+    loadSpecKey();
+  }, []);
 
-  return (
-    <View style={styles.container}>
-      <Text>Planner setup confirmed (confidence = {testConfidence})</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+  const handleSpecSelected = async (specKey: string) => {
+    await AsyncStorage.setItem(STORAGE_KEY, specKey);
+    setActiveSpecKey(specKey);
+  };
+
+  const handleReset = async () => {
+    await AsyncStorage.removeItem(STORAGE_KEY);
+    setActiveSpecKey(null);
+  };
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
+  if (!activeSpecKey) {
+    return <SetupFlow onComplete={handleSpecSelected} />;
+  }
+
+  return <SpecViewer specKey={activeSpecKey} onReset={handleReset} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

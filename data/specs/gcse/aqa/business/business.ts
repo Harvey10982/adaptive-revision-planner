@@ -1,4 +1,4 @@
-// data/specs/gcse/aqa/business/specification.ts
+import type { SubjectSpecification } from "../../../../types/SubjectSpecification"
 
 export const specification: SubjectSpecification = {
   units: [

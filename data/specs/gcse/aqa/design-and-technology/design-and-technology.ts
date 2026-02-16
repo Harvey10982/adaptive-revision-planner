@@ -1,11 +1,4 @@
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
-/**
- * GCSE AQA Design and Technology (8552) — curriculum structure only.
- *
- * Notes:
- * - This file intentionally contains NO selection/catalog metadata.
- * - If you want a Higher file for consistency, duplicate this file as `higher.ts`.
- */
+import type { SubjectSpecification } from "../../../../types/SubjectSpecification"
 
 export const specification: SubjectSpecification = {
   units: [

@@ -1,11 +1,4 @@
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
-/**
- * GCSE AQA Music (8271) — curriculum structure only.
- *
- * Notes:
- * - This file intentionally contains NO selection/catalog metadata.
- * - If you want a Higher file for consistency, duplicate this file as `higher.ts`.
- */
+import type { SubjectSpecification } from "../../../../types/SubjectSpecification"
 
 export const specification: SubjectSpecification = {
   units: [

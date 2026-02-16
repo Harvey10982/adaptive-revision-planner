@@ -1,12 +1,4 @@
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
-/**
- * GCSE AQA Engineering (8852) — curriculum structure only.
- *
- * Notes:
- * - This file intentionally contains NO selection/catalog metadata.
- * - If you want a Higher file for consistency, duplicate this file as `higher.ts`.
- * - This qualification includes a written exam and a non-exam assessment (NEA).
- */
+import type { SubjectSpecification } from "../../../../types/SubjectSpecification"
 
 export const specification: SubjectSpecification = {
   units: [
