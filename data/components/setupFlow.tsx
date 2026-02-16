@@ -50,6 +50,60 @@ function toCourseLabel(course: SelectedCourse): string {
   return parts.join(" • ");
 }
 
+type Tier = "foundation" | "higher";
+
+type SubjectOption = {
+  subject: string;
+  tiers: Tier[];
+  baseKey: string;
+};
+
+function toLabel(subjectSlug: string): string {
+  return subjectSlug
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function toCourseLabel(specKey: string): string {
+  const [qualification, board, subject, tier] = specKey.split("/");
+  return [qualification?.toUpperCase(), board?.toUpperCase(), toLabel(subject ?? "")]
+    .concat(tier ? [tier] : [])
+    .join(" • ");
+}
+
+function buildSubjectOptions(): SubjectOption[] {
+  const map = new Map<string, SubjectOption>();
+
+  Object.keys(specificationRegistry)
+    .filter((key) => key.startsWith("gcse/aqa/"))
+    .forEach((key) => {
+      const segments = key.split("/");
+      const subject = segments[2];
+      const maybeTier = segments[3];
+      const subjectKey = `gcse/aqa/${subject}`;
+
+      const existing = map.get(subject);
+      const tiers: Tier[] = existing?.tiers ? [...existing.tiers] : [];
+
+      if (maybeTier === "foundation" || maybeTier === "higher") {
+        if (!tiers.includes(maybeTier)) {
+          tiers.push(maybeTier);
+        }
+      }
+
+      map.set(subject, {
+        subject,
+        tiers,
+        baseKey: subjectKey,
+      });
+    });
+
+  return [...map.values()].sort((a, b) => a.subject.localeCompare(b.subject));
+}
+
+const subjectOptions = buildSubjectOptions();
+
 export default function SetupFlow({ onComplete }: Props) {
   const [qualification, setQualification] = useState<QualificationChoice>("gcse");
   const [board, setBoard] = useState<BoardChoice>("aqa");
