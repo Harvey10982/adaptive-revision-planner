@@ -1,17 +1,17 @@
 import React from "react";
-import { View, Text, ScrollView, Button } from "react-native";
+import { View, Text, ScrollView, Button, SafeAreaView } from "react-native";
 import { resolveSpec } from "../core/specResolver";
 
 interface Props {
-  specKey: string;
+  specKeys: string[];
   onReset: () => void;
 }
 
-export default function SpecViewer({ specKey, onReset }: Props) {
+function CourseSection({ specKey }: { specKey: string }) {
   const specification = resolveSpec(specKey);
 
   return (
-    <ScrollView style={{ padding: 16 }}>
+    <View style={{ marginBottom: 24 }}>
       <Text style={{ fontSize: 18, marginBottom: 12 }}>
         Spec Key: {specKey}
       </Text>
@@ -65,8 +65,30 @@ export default function SpecViewer({ specKey, onReset }: Props) {
           ))}
         </View>
       ))}
+    </View>
+  );
+}
 
-      <Button title="Reset" onPress={onReset} />
-    </ScrollView>
+export default function SpecViewer({ specKeys, onReset }: Props) {
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8 }}>
+        <Button title="Reset and choose courses" onPress={onReset} />
+      </View>
+
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}>
+        <Text style={{ fontSize: 20, fontWeight: "600", marginBottom: 16 }}>
+          Selected Courses ({specKeys.length})
+        </Text>
+
+        {specKeys.map((specKey) => (
+          <CourseSection key={specKey} specKey={specKey} />
+        ))}
+      </ScrollView>
+
+      <View style={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 }}>
+        <Button title="Reset and choose courses" onPress={onReset} />
+      </View>
+    </SafeAreaView>
   );
 }

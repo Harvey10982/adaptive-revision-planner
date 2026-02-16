@@ -4,29 +4,44 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import SetupFlow from "./data/components/setupFlow";
 import SpecViewer from "./data/components/specViewer";
 
-const STORAGE_KEY = "ACTIVE_SPEC_KEY";
+const STORAGE_KEY = "ACTIVE_SPEC_KEYS";
 
 export default function App() {
-  const [activeSpecKey, setActiveSpecKey] = useState<string | null>(null);
+  const [activeSpecKeys, setActiveSpecKeys] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadSpecKey = async () => {
+    const loadSpecKeys = async () => {
       const saved = await AsyncStorage.getItem(STORAGE_KEY);
-      if (saved) setActiveSpecKey(saved);
+
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved) as unknown;
+          if (Array.isArray(parsed)) {
+            setActiveSpecKeys(parsed.filter((item): item is string => typeof item === "string"));
+          }
+        } catch {
+          // Backward compatibility: if older single key was saved, keep using it.
+          setActiveSpecKeys([saved]);
+        }
+      }
+
       setLoading(false);
     };
-    loadSpecKey();
+
+    loadSpecKeys();
   }, []);
 
-  const handleSpecSelected = async (specKey: string) => {
-    await AsyncStorage.setItem(STORAGE_KEY, specKey);
-    setActiveSpecKey(specKey);
+  const handleSpecsSelected = async (specKeys: string[]) => {
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(specKeys));
+    setActiveSpecKeys(specKeys);
   };
 
   const handleReset = async () => {
     await AsyncStorage.removeItem(STORAGE_KEY);
-    setActiveSpecKey(null);
+    // Remove old key as well for users upgrading from previous versions.
+    await AsyncStorage.removeItem("ACTIVE_SPEC_KEY");
+    setActiveSpecKeys([]);
   };
 
   if (loading) {
@@ -37,9 +52,9 @@ export default function App() {
     );
   }
 
-  if (!activeSpecKey) {
-    return <SetupFlow onComplete={handleSpecSelected} />;
+  if (activeSpecKeys.length === 0) {
+    return <SetupFlow onComplete={handleSpecsSelected} />;
   }
 
-  return <SpecViewer specKey={activeSpecKey} onReset={handleReset} />;
+  return <SpecViewer specKeys={activeSpecKeys} onReset={handleReset} />;
 }
