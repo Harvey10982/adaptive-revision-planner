@@ -18,4 +18,5 @@ export interface SelectedCourse {
   subjectName: string;
   tier: TierChoice | null;
   optionSelections: CourseOptionSelection[];
+  specTitle: string;
 }

@@ -222,7 +222,6 @@ export const AQA_GCSE_SUBJECTS: readonly SubjectMenuItem[] = [
       tiering: TIERED_FH,
       specs: [
         { code: "8652", title: "French (current specification)", status: "CURRENT", firstTeachingYear: 2024, firstExamYear: 2026 },
-        { code: "8658", title: "French (legacy specification)", status: "LEGACY", firstTeachingYear: 2016, notes: "Legacy specification (AQA directs to 8652 for current)." },
       ],
     },
     { id: makeId("AQA", "GCSE", "Geography"), name: "Geography", examBoard: "AQA", qualification: "GCSE", tiering: NOT_TIERED, specs: [{ code: "8035", title: "Geography", status: "CURRENT" }] },
@@ -234,7 +233,6 @@ export const AQA_GCSE_SUBJECTS: readonly SubjectMenuItem[] = [
       tiering: TIERED_FH,
       specs: [
         { code: "8662", title: "German (current specification)", status: "CURRENT" },
-        { code: "8668", title: "German (legacy specification)", status: "LEGACY", notes: "Legacy specification (AQA directs to 8662 for current)." },
       ],
     },
     { id: makeId("AQA", "GCSE", "Hebrew (Modern)"), name: "Hebrew (Modern)", examBoard: "AQA", qualification: "GCSE", tiering: TIERED_FH, specs: [{ code: "8678", title: "Hebrew (Modern)", status: "CURRENT" }] },
@@ -271,7 +269,6 @@ export const AQA_GCSE_SUBJECTS: readonly SubjectMenuItem[] = [
       tiering: TIERED_FH,
       specs: [
         { code: "8692", title: "Spanish (current specification)", status: "CURRENT", firstTeachingYear: 2024, firstExamYear: 2026 },
-        { code: "8698", title: "Spanish (legacy specification)", status: "LEGACY", firstTeachingYear: 2016, notes: "Legacy specification (AQA directs to 8692 for current)." },
       ],
     },
     { id: makeId("AQA", "GCSE", "Statistics"), name: "Statistics", examBoard: "AQA", qualification: "GCSE", tiering: TIERED_FH, specs: [{ code: "8382", title: "Statistics", status: "CURRENT" }] },
